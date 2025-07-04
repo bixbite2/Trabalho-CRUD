@@ -1,0 +1,13 @@
+Prompt 1:
+
+* pdf do trabalho *
+
+essa é a ordem do trabalho, eu não sei muito bem trabalhar com sgbds e apis, como que eu poderia começar o trabalho?
+
+Prompt 2:
+
+eu queria fazer uma tabela com estrutura:
+
+Distribuição | Baseada em | Popularidade | Data adicionada | Nota média dos usuários |
+Manjaro       |  Arch Linux   | 100 usuários  | 13/10/2009          | 8.3                                     |
+Ubuntu        |  Debian Linux   | 300 usuários  | 12/10/2009      | 7.3                                     |

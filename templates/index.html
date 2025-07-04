@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Avaliar Distros</title>
+</head>
+<body>
+  <h1>Avaliar Distros</h1>
+
+  <form id="form">
+    Seu nome: <input name="nome" required /><br>
+
+    Escolha uma distro:
+    <select name="distro_id" id="distro_select"></select><br>
+
+    Ou adicione uma nova distro:
+    <input name="nova_distro" /><br>
+
+    Nota: <input name="nota" type="number" min="0" max="10" required /><br>
+
+    <button type="submit">Avaliar</button>
+  </form>
+
+  <h2>Distros cadastradas</h2>
+  <ul id="lista"></ul>
+
+  <script>
+    async function carregar() {
+      const res = await fetch("/distros");
+      const distros = await res.json();
+
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
+      const select = document.getElementById("distro_select");
+      select.innerHTML = "";
+      distros.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d[0];
+        opt.textContent = d[1];
+        select.appendChild(opt);
+
+        const li = document.createElement("li");
+        li.textContent = `${d[1]} (nota média: ${d[5]})`;
+        lista.appendChild(li);
+      });
+    }
+
+    document.getElementById("form").onsubmit = async e => {
+      e.preventDefault();
+      const dados = Object.fromEntries(new FormData(e.target).entries());
+
+      let distro_id = dados.distro_id;
+
+      if (dados.nova_distro) {
+        const res = await fetch("/nova_distro", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ nome: dados.nova_distro })
+        });
+        distro_id = (await res.json()).id;
+      }
+
+      const resUser = await fetch("/usuario", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ nome: dados.nome })
+      });
+      const usuario_id = (await resUser.json()).id;
+
+      await fetch("/avaliar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          usuario_id,
+          distro_id,
+          nota: Number(dados.nota)
+        })
+      });
+
+      e.target.reset();
+      carregar();
+    };
+
+    carregar();
+  </script>
+</body>
+</html>
