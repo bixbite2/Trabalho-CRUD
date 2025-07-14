@@ -2,18 +2,19 @@
 <html>
 <head>
   <title>Avaliar Distros</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 <body>
   <h1>Avaliar Distros</h1>
 
   <form id="form">
-    Seu nome: <input name="nome" required /><br>
+    <!-- Seu nome: <input name="nome" required /><br> -->
 
     Escolha uma distro:
     <select name="distro_id" id="distro_select"></select><br>
 
-    Ou adicione uma nova distro:
-    <input name="nova_distro" /><br>
+    <!-- Ou adicione uma nova distro: -->
+    <!-- <input name="nova_distro" /><br> -->
 
     Nota: <input name="nota" type="number" min="0" max="10" required /><br>
 
@@ -50,31 +51,19 @@
 
       let distro_id = dados.distro_id;
 
-      if (dados.nova_distro) {
-        const res = await fetch("/nova_distro", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ nome: dados.nova_distro })
-        });
-        distro_id = (await res.json()).id;
-      }
-
-      const resUser = await fetch("/usuario", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ nome: dados.nome })
-      });
-      const usuario_id = (await resUser.json()).id;
-
-      await fetch("/avaliar", {
+      const res = await fetch("/avaliar", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
-          usuario_id,
           distro_id,
           nota: Number(dados.nota)
         })
       });
+
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.message);
+      }
 
       e.target.reset();
       carregar();

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Add Distro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+
+        <div class="form-container">
+            <h2>Add New Distro</h2>
+            <form id="add-distro-form">
+                <input name="nova_distro" placeholder="Enter new distro name" required />
+                <select name="baseada_em">
+                    <option value="Debian">Debian</option>
+                    <option value="Arch">Arch</option>
+                    <option value="Outra">Outra</option>
+                </select>
+                <input name="outra_base" placeholder="Enter other base (if applicable)" />
+                <button type="submit">Add Distro</button>
+            </form>
+        </div>
+
+        <div class="list-container">
+            <h2>Existing Distros</h2>
+            <ul id="distro-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        async function loadDistros() {
+            const response = await fetch('/distros');
+            const distros = await response.json();
+            const list = document.getElementById('distro-list');
+            list.innerHTML = '';
+            distros.forEach(distro => {
+                const li = document.createElement('li');
+                li.textContent = distro[1]; // Assuming the name is the second element
+
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'Remove';
+                removeButton.className = 'remove-button'; // Add this line
+                removeButton.onclick = () => removeDistro(distro[0]);
+
+                li.appendChild(removeButton);
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById('add-distro-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const newDistroName = formData.get('nova_distro');
+            let base = formData.get('baseada_em');
+            const outraBase = formData.get('outra_base');
+
+            if (base === 'Outra' && outraBase) {
+                base = outraBase;
+            }
+
+            if (newDistroName) {
+                await fetch("/nova_distro", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ nome: newDistroName, baseada_em: base })
+                });
+                e.target.reset();
+                loadDistros();
+            }
+        };
+
+        // Initial load
+        loadDistros();
+
+        async function removeDistro(id) {
+            await fetch(`/remove_distro/${id}`, {
+                method: 'DELETE'
+            });
+            loadDistros();
+        }
+    </script>
+</body>
+</html>
