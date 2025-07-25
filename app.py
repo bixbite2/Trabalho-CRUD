@@ -6,13 +6,8 @@ from datetime import date
 import secrets
 import string
 
-def generate_secret_key(length=32):
-    alphabet = string.ascii_letters + string.digits + string.punctuation
-    secret_key = ''.join(secrets.choice(alphabet) for _ in range(length))
-    return secret_key
-
 app = Flask(__name__)
-app.secret_key = generate_secret_key(64)
+app.secret_key = "I|6C!lISAO[$3KU8fO7vC`~WogVNcJUiJYE`p8MU0j|KVeW#?Heqs7'U|L0T8~7-'"
 
 conn = psycopg2.connect(
     dbname="banco_prisco_distros",
@@ -29,6 +24,25 @@ def login_required(f):
             flash('Please log in to access this page.')
             return redirect(url_for('main'))
         return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.')
+            return redirect(url_for('main'))
+        
+        cur = conn.cursor()
+        cur.execute("SELECT username FROM usuarios WHERE id = %s", (session['user_id'],))
+        user = cur.fetchone()
+        cur.close()
+
+        if user and user[0] == 'bixbite':
+            return f(*args, **kwargs)
+        else:
+            flash('You do not have permission to access this page.')
+            return redirect(url_for('user'))
     return decorated_function
 
 # Páginas
@@ -55,7 +69,7 @@ def main():
     return render_template("main.html")
 
 @app.route("/admin")
-@login_required
+@admin_required
 def admin():
     return render_template("admin.html")
 
